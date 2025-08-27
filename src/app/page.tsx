@@ -4,7 +4,7 @@ import TagSelector from "./components/TagSelector";
 
 export default async function Page() {
   // SSR ดึงข่าวทั้งหมดมาก่อน (SEO)
-  const res = await fetch("https://onefeed-th-api.artzakub.com/api/v1/news", {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`, {
     method: "POST",
     body: JSON.stringify({
       source: ["MacThai", "DroidSans", "เกมถูกบอกด้วย"], // เอามาหมด

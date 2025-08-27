@@ -22,7 +22,7 @@ export default function NewsWithPagination({ initialNews }: { initialNews: NewsI
   const fetchNews = async (pageNum: number, tags: string[]) => {
     setLoading(true);
     try {
-      const res = await fetch("https://onefeed-th-api.artzakub.com/api/v1/news", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`, {
         method: "POST",
         body: JSON.stringify({
           source: tags,

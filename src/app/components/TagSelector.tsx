@@ -19,7 +19,7 @@ export default function TagSelector() {
   useEffect(() => {
     // Fetch tags from the API or define them here
     const fetchTags = async () => {
-      const response = await fetch("https://onefeed-th-api.artzakub.com/api/v1/tags");
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tags`);
       const data: TagResponse = await response.json();
       setTags(data.data);
     };
