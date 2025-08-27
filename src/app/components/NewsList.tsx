@@ -58,7 +58,10 @@ export default function NewsWithPagination({ initialNews }: { initialNews: NewsI
       <div className="flex justify-center gap-4 mt-6">
         <button
           disabled={page === 1}
-          onClick={() => setPage((p) => p - 1)}
+          onClick={() => {
+            setPage((p) => p - 1)
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
         >
           <FontAwesomeIcon icon={faArrowLeft} /> Prev
@@ -67,7 +70,10 @@ export default function NewsWithPagination({ initialNews }: { initialNews: NewsI
         <span className="px-4 py-2">Page {page}</span>
 
         <button
-          onClick={() => setPage((p) => p + 1)}
+          onClick={() => {
+            setPage((p) => p + 1)
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
           className="px-4 py-2 bg-gray-200 rounded"
         >
           Next <FontAwesomeIcon icon={faArrowRight} />
