@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__MCP_Shadcn__list_components",
+      "mcp__MCP_Context7__resolve-library-id",
+      "Bash(npm install:*)",
+      "Bash(npx:*)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(npm run dev:*)",
+      "mcp__MCP_Browser__browser_navigate",
+      "mcp__MCP_Browser__browser_snapshot",
+      "mcp__MCP_Browser__browser_screenshot",
+      "mcp__MCP_Browser__browser_click",
+      "mcp__MCP_Browser__browser_get_console_logs"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,27 +1,47 @@
-import NewsWithPagination from "./components/NewsList";
-import NewsList from "./components/NewsList";
-import TagSelector from "./components/TagSelector";
+import { Header } from "./components/Header"
+import { TagBar } from "./components/TagBar"
+import { NewsFeed } from "./components/NewsFeed"
+import type { NewsItem } from "./components/NewsCard"
 
-export default async function Page() {
-  // SSR ดึงข่าวทั้งหมดมาก่อน (SEO)
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/news`, {
-    method: "POST",
-    body: JSON.stringify({
-      source: ["MacThai", "DroidSans", "เกมถูกบอกด้วย"], // เอามาหมด
-      page: 1,
-      limit: 50,
-    }),
-    headers: { "Content-Type": "application/json" },
-    cache: "no-store",
-  });
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://onefeed-th-api.artzakub.com/api/v1'
 
-  const news = await res.json();
+export default async function HomePage() {
+  let initialNews: NewsItem[] = []
+
+  try {
+    // SSR: Fetch initial news for SEO optimization
+    const response = await fetch(`${API_URL}/news`, {
+      method: "POST",
+      body: JSON.stringify({
+        source: ["MacThai", "DroidSans", "เกมถูกบอกด้วย"], // Start with main sources
+        page: 1,
+        limit: 20,
+      }),
+      headers: { "Content-Type": "application/json" },
+      cache: "no-store",
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      initialNews = data.data || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch initial news:', error)
+    // Continue with empty array - client will fetch
+  }
 
   return (
-    <div className="w-screen p-1 bg-white text-black">
-      <TagSelector />
-      <h1 className="text-xl font-bold my-10">ข่าวล่าสุด</h1>
-      <NewsWithPagination initialNews={news.data} />
+    <div className="min-h-screen bg-background">
+      {/* Minimal Header - No search, focus on reading tools */}
+      <Header />
+      
+      {/* Enhanced Tag Bar - Primary content discovery */}
+      <TagBar />
+      
+      {/* Main Content Area */}
+      <main className="container mx-auto px-4 py-6 max-w-7xl">
+        <NewsFeed initialNews={initialNews} />
+      </main>
     </div>
-  );
+  )
 }
