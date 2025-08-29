@@ -19,6 +19,19 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://onefeed-th-api.artza
 export function TagBar() {
   const { selectedTags, toggleTag, clearTags } = useTagStore()
   const [tags, setTags] = useState<string[]>([])
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 640)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     // Fetch available tags from API
@@ -60,35 +73,36 @@ export function TagBar() {
     return 0
   })
 
-  // Show first 6 sorted tags in the bar, rest in the sheet
-  const popularTags = sortedTags.slice(0, 6)
-  const moreTags = sortedTags.slice(6)
+  // Show fewer tags on mobile to prevent crowding
+  const popularTagsCount = isMobile ? 3 : 6
+  const popularTags = sortedTags.slice(0, popularTagsCount)
+  const moreTags = sortedTags.slice(popularTagsCount)
 
   return (
     <div className="sticky top-14 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center gap-4 py-3">
+      <div className="container mx-auto px-2 sm:px-4">
+        <div className="flex items-center gap-2 sm:gap-4 py-2 sm:py-3">
           {/* Horizontal scrolling tags */}
           <ScrollArea className="flex-1">
-            <div className="flex items-center gap-2 pb-1">
+            <div className="flex items-center gap-1 sm:gap-2 pb-1">
               {/* All News Button */}
               <Button
                 variant={selectedTags.length === 0 ? "default" : "outline"}
                 size="sm"
                 onClick={handleClearTags}
-                className="shrink-0"
+                className="shrink-0 text-xs sm:text-sm px-2 sm:px-3"
               >
                 ข่าวหลัก
               </Button>
               
-              <Separator orientation="vertical" className="h-6" />
+              <Separator orientation="vertical" className="h-4 sm:h-6" />
               
               {/* Popular Tags */}
               {popularTags.map((tag) => (
                 <Badge
                   key={tag}
                   variant={selectedTags.includes(tag) ? "default" : "outline"}
-                  className="cursor-pointer shrink-0 px-3 py-1.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
+                  className="cursor-pointer shrink-0 px-2 sm:px-3 py-1 sm:py-1.5 text-xs sm:text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
                   onClick={() => handleToggleTag(tag)}
                 >
                   {tag}
@@ -98,12 +112,14 @@ export function TagBar() {
               {/* More Tags Button */}
               {moreTags.length > 0 && (
                 <>
-                  <Separator orientation="vertical" className="h-6" />
+                  <Separator orientation="vertical" className="h-4 sm:h-6" />
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline" size="sm" className="shrink-0">
-                        <Filter className="h-4 w-4 mr-2" />
-                        แท็กเพิ่มเติม ({moreTags.length})
+                      <Button variant="outline" size="sm" className="shrink-0 text-xs sm:text-sm px-2 sm:px-3">
+                        <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">แท็กเพิ่มเติม</span>
+                        <span className="sm:hidden">+{moreTags.length}</span>
+                        <span className="hidden sm:inline">({moreTags.length})</span>
                       </Button>
                     </SheetTrigger>
                     <SheetContent className="w-full sm:max-w-md">
@@ -123,12 +139,15 @@ export function TagBar() {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
           
-          {/* Selected Tags Count & Clear */}
+          {/* Selected Tags Count & Clear - Mobile Optimized */}
           {selectedTags.length > 0 && (
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 shrink-0">
+              <span className="text-xs text-muted-foreground hidden sm:inline">
                 เลือก {selectedTags.length} หัวข้อ
               </span>
+              <Badge variant="secondary" className="text-xs sm:hidden">
+                {selectedTags.length}
+              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
@@ -136,7 +155,7 @@ export function TagBar() {
                 className="h-8 px-2"
               >
                 <X className="h-4 w-4" />
-                ล้างทั้งหมด
+                <span className="hidden sm:inline ml-1">ล้างทั้งหมด</span>
               </Button>
             </div>
           )}
