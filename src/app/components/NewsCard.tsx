@@ -1,15 +1,14 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Bookmark, ExternalLink, Clock } from "lucide-react"
-import Image from "next/image"
 import { format, isToday, isYesterday, differenceInHours, differenceInMinutes } from "date-fns"
 import { th } from "date-fns/locale"
 import { useAppStore } from "@/stores/useAppStore"
+import { OptimizedImage } from "@/components/optimized-image"
 
 // Updated NewsItem interface to match current API
 export interface NewsItem {
@@ -30,7 +29,6 @@ interface NewsCardProps {
 
 export function NewsCard({ article, priority = false }: NewsCardProps) {
   const { isBookmarked, toggleBookmark } = useAppStore()
-  const [imageError, setImageError] = useState(false)
   
   const articleId = article.id || article.link
   const bookmarked = isBookmarked(articleId)
@@ -97,33 +95,28 @@ export function NewsCard({ article, priority = false }: NewsCardProps) {
         rel="noopener noreferrer"
         className="block flex-1 flex flex-col"
       >
-        {/* Optimized image with Next.js Image */}
-        {article.image && !imageError && (
-          <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-            <Image
-              src={article.image}
-              alt={article.title}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-105"
-              priority={priority}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onError={() => setImageError(true)}
-            />
-            
-            {/* Gradient Overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-          </div>
-        )}
-        
-        {/* No image fallback */}
-        {(!article.image || imageError) && (
-          <div className="aspect-[16/10] bg-muted flex items-center justify-center">
-            <div className="text-center text-muted-foreground">
-              <div className="text-4xl mb-2">📰</div>
-              <div className="text-sm">ไม่มีรูปภาพ</div>
-            </div>
-          </div>
-        )}
+        {/* Optimized image with robust error handling */}
+        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+          <OptimizedImage
+            src={article.image || ''}
+            alt={article.title}
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            priority={priority}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onError={() => {}}
+            fallback={
+              <div className="w-full h-full bg-muted flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <div className="text-4xl mb-2">📰</div>
+                  <div className="text-sm">ไม่มีรูปภาพ</div>
+                </div>
+              </div>
+            }
+          />
+          
+          {/* Gradient Overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        </div>
         
         <CardContent className="p-5 flex-1 flex flex-col">
           {/* Source & Time */}
