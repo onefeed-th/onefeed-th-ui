@@ -43,8 +43,8 @@ const nextConfig: NextConfig = {
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
-    // Add unoptimized as fallback for problematic images
-    unoptimized: process.env.NODE_ENV === 'development',
+    // Disable optimization for production to avoid RSS feed image issues
+    unoptimized: true,
   },
 };
 

@@ -22,24 +22,25 @@ export function OptimizedImage({
   onError,
   fallback
 }: OptimizedImageProps) {
+  const [useNativeImg, setUseNativeImg] = useState(false)
   const [error, setError] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [retryCount, setRetryCount] = useState(0)
 
   const handleError = useCallback(() => {
-    console.warn(`Image failed to load: ${src}`)
+    console.warn(`Image optimization failed, falling back to native img: ${src}`)
     
-    // Retry once with unoptimized fallback
-    if (retryCount === 0 && src) {
-      setRetryCount(1)
+    if (!useNativeImg) {
+      // Try native img first
+      setUseNativeImg(true)
       setLoading(true)
       return
     }
     
+    // If native img also fails, show fallback
     setError(true)
     setLoading(false)
     onError?.()
-  }, [onError, src, retryCount])
+  }, [onError, src, useNativeImg])
 
   const handleLoad = useCallback(() => {
     setLoading(false)
@@ -49,9 +50,12 @@ export function OptimizedImage({
   // Clean and validate src URL
   const cleanSrc = src?.trim()
   const isValidSrc = cleanSrc && 
+    cleanSrc.length > 0 &&
     (cleanSrc.startsWith('http://') || cleanSrc.startsWith('https://')) &&
     !cleanSrc.includes('undefined') &&
-    !cleanSrc.includes('null')
+    !cleanSrc.includes('null') &&
+    !cleanSrc.endsWith('null') &&
+    !cleanSrc.endsWith('undefined')
 
   // If we have an error or no valid src, show fallback
   if (error || !isValidSrc) {
@@ -65,8 +69,8 @@ export function OptimizedImage({
     )
   }
 
-  // Use unoptimized fallback on retry
-  if (retryCount > 0) {
+  // Use native img if Next.js Image fails
+  if (useNativeImg) {
     return (
       <>
         {loading && (
@@ -75,18 +79,19 @@ export function OptimizedImage({
         <img
           src={cleanSrc}
           alt={alt}
-          className={`${className} object-cover w-full h-full`}
+          className={`${className} w-full h-full object-cover`}
           onError={handleError}
           onLoad={handleLoad}
           loading={priority ? "eager" : "lazy"}
           referrerPolicy="no-referrer"
           crossOrigin="anonymous"
+          decoding="async"
         />
       </>
     )
   }
 
-  // Try to use Next.js Image first
+  // Try Next.js Image first (but with unoptimized=true from config)
   return (
     <>
       {loading && (
@@ -102,7 +107,8 @@ export function OptimizedImage({
         onError={handleError}
         onLoad={handleLoad}
         quality={85}
-        unoptimized={process.env.NODE_ENV === 'development'}
+        // Force unoptimized for RSS feeds to avoid 400 errors
+        unoptimized={true}
       />
     </>
   )
