@@ -1,11 +1,9 @@
-import { Header } from "./components/Header"
-import { TagBar } from "./components/TagBar"
-import { NewsFeed } from "./components/NewsFeed"
+import { HomePage } from "./components/HomePage"
 import type { NewsItem } from "./components/NewsCard"
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://onefeed-th-api.artzakub.com/api/v1'
 
-export default async function HomePage() {
+export default async function Page() {
   let initialNews: NewsItem[] = []
 
   try {
@@ -18,7 +16,7 @@ export default async function HomePage() {
         limit: 20,
       }),
       headers: { "Content-Type": "application/json" },
-      cache: "no-store",
+      next: { revalidate: 300 }, // Revalidate every 5 minutes
     })
 
     if (response.ok) {
@@ -30,18 +28,5 @@ export default async function HomePage() {
     // Continue with empty array - client will fetch
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Minimal Header - No search, focus on reading tools */}
-      <Header />
-      
-      {/* Enhanced Tag Bar - Primary content discovery */}
-      <TagBar />
-      
-      {/* Main Content Area */}
-      <main className="container mx-auto px-4 py-6 max-w-7xl">
-        <NewsFeed initialNews={initialNews} />
-      </main>
-    </div>
-  )
+  return <HomePage initialNews={initialNews} />
 }

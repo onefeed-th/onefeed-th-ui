@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
 import { QueryProvider } from "@/components/query-provider"
+import { ErrorBoundary } from "@/components/error-boundary"
+import { ServiceWorkerProvider } from "@/components/service-worker"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,9 +47,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <QueryProvider>
-            {children}
-          </QueryProvider>
+          <ErrorBoundary>
+            <QueryProvider>
+              <ServiceWorkerProvider />
+              {children}
+            </QueryProvider>
+          </ErrorBoundary>
         </ThemeProvider>
       </body>
     </html>

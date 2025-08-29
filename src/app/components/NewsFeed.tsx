@@ -1,12 +1,15 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { useInView } from "react-intersection-observer"
+// Removed URL synchronization temporarily - useSearchParams, useRouter
 import { NewsCard, NewsCardSkeleton, type NewsItem } from "./NewsCard"
 import { Button } from "@/components/ui/button"
 import { ArrowUp, Loader2, AlertCircle, RefreshCw } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { useTagStore } from "@/stores/useTagStore"
+import { useAppStore } from "@/stores/useAppStore"
 
 interface NewsResponse {
   data?: NewsItem[]
@@ -16,41 +19,28 @@ interface NewsResponse {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://onefeed-th-api.artzakub.com/api/v1'
 
 export function NewsFeed({ initialNews = [] }: { initialNews?: NewsItem[] }) {
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const { selectedTags } = useTagStore()
+  const { setIsRefreshing, setLastRefreshTime } = useAppStore()
   const queryClient = useQueryClient()
   const { ref, inView } = useInView()
 
-  // Listen for tag changes and refresh events
+  // TODO: Implement URL synchronization later without circular dependencies
+
+  // Listen for refresh events
   useEffect(() => {
-    const handleTagChange = (event: CustomEvent) => {
-      const newTags = event.detail
-      setSelectedTags(newTags)
-    }
-    
     const handleRefresh = () => {
+      setIsRefreshing(true)
+      setLastRefreshTime(Date.now())
       queryClient.invalidateQueries({ queryKey: ['news'] })
+      setTimeout(() => setIsRefreshing(false), 1000)
     }
 
-    window.addEventListener('tags-changed', handleTagChange as EventListener)
     window.addEventListener('refresh-news', handleRefresh)
     
     return () => {
-      window.removeEventListener('tags-changed', handleTagChange as EventListener)
       window.removeEventListener('refresh-news', handleRefresh)
     }
-  }, [queryClient])
-
-  // Load saved tags on mount
-  useEffect(() => {
-    const saved = localStorage.getItem("selectedTags")
-    if (saved) {
-      try {
-        setSelectedTags(JSON.parse(saved))
-      } catch (error) {
-        console.error("Failed to parse saved tags:", error)
-      }
-    }
-  }, [])
+  }, [queryClient, setIsRefreshing, setLastRefreshTime])
 
   const fetchNews = async ({ pageParam = 1 }): Promise<NewsResponse> => {
     try {

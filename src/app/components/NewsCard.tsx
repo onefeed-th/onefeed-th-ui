@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Bookmark, ExternalLink, Clock } from "lucide-react"
 import Image from "next/image"
-import { formatDistanceToNow, format, isToday, isYesterday, differenceInHours, differenceInMinutes } from "date-fns"
+import { format, isToday, isYesterday, differenceInHours, differenceInMinutes } from "date-fns"
 import { th } from "date-fns/locale"
+import { useAppStore } from "@/stores/useAppStore"
 
 // Updated NewsItem interface to match current API
 export interface NewsItem {
@@ -28,25 +29,16 @@ interface NewsCardProps {
 }
 
 export function NewsCard({ article, priority = false }: NewsCardProps) {
-  const [isBookmarked, setIsBookmarked] = useState(false)
+  const { isBookmarked, toggleBookmark } = useAppStore()
   const [imageError, setImageError] = useState(false)
+  
+  const articleId = article.id || article.link
+  const bookmarked = isBookmarked(articleId)
   
   const handleBookmark = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    setIsBookmarked(!isBookmarked)
-    
-    // Save to localStorage (could be replaced with API call)
-    const bookmarks = JSON.parse(localStorage.getItem("bookmarks") || "[]")
-    const articleId = article.id || article.link
-    
-    if (isBookmarked) {
-      const updated = bookmarks.filter((id: string) => id !== articleId)
-      localStorage.setItem("bookmarks", JSON.stringify(updated))
-    } else {
-      bookmarks.push(articleId)
-      localStorage.setItem("bookmarks", JSON.stringify(bookmarks))
-    }
+    toggleBookmark(articleId)
   }
 
   const formatTime = (dateString: string) => {
@@ -95,7 +87,10 @@ export function NewsCard({ article, priority = false }: NewsCardProps) {
   }
 
   return (
-    <Card className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+    <Card 
+      className="group overflow-hidden hover:shadow-xl transition-all duration-300 h-full flex flex-col"
+      data-article-card
+    >
       <a 
         href={article.link} 
         target="_blank" 
@@ -181,10 +176,10 @@ export function NewsCard({ article, priority = false }: NewsCardProps) {
           className="h-8 hover:bg-accent"
         >
           <Bookmark 
-            className={`h-4 w-4 mr-2 ${isBookmarked ? 'fill-current' : ''}`} 
+            className={`h-4 w-4 mr-2 ${bookmarked ? 'fill-current' : ''}`} 
           />
           <span className="text-xs">
-            {isBookmarked ? 'บันทึกแล้ว' : 'บันทึก'}
+            {bookmarked ? 'บันทึกแล้ว' : 'บันทึก'}
           </span>
         </Button>
         

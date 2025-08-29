@@ -7,6 +7,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Filter, X } from "lucide-react"
+import { useTagStore } from "@/stores/useTagStore"
 
 // Use the actual API response format
 type TagResponse = {
@@ -16,20 +17,10 @@ type TagResponse = {
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://onefeed-th-api.artzakub.com/api/v1'
 
 export function TagBar() {
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const { selectedTags, toggleTag, clearTags } = useTagStore()
   const [tags, setTags] = useState<string[]>([])
 
   useEffect(() => {
-    // Load saved tags from localStorage
-    const saved = localStorage.getItem("selectedTags")
-    if (saved) {
-      try {
-        setSelectedTags(JSON.parse(saved))
-      } catch (error) {
-        console.error("Failed to parse saved tags:", error)
-      }
-    }
-
     // Fetch available tags from API
     const fetchTags = async () => {
       try {
@@ -48,22 +39,12 @@ export function TagBar() {
     fetchTags()
   }, [])
 
-  const toggleTag = (tag: string) => {
-    const updated = selectedTags.includes(tag)
-      ? selectedTags.filter(t => t !== tag)
-      : [...selectedTags, tag]
-    
-    setSelectedTags(updated)
-    localStorage.setItem("selectedTags", JSON.stringify(updated))
-    
-    // Trigger news refresh with new tags
-    window.dispatchEvent(new CustomEvent('tags-changed', { detail: updated }))
+  const handleToggleTag = (tag: string) => {
+    toggleTag(tag)
   }
 
-  const clearAllTags = () => {
-    setSelectedTags([])
-    localStorage.removeItem("selectedTags")
-    window.dispatchEvent(new CustomEvent('tags-changed', { detail: [] }))
+  const handleClearTags = () => {
+    clearTags()
   }
 
   // Sort tags: selected tags first, then unselected tags
@@ -94,7 +75,7 @@ export function TagBar() {
               <Button
                 variant={selectedTags.length === 0 ? "default" : "outline"}
                 size="sm"
-                onClick={clearAllTags}
+                onClick={handleClearTags}
                 className="shrink-0"
               >
                 ข่าวหลัก
@@ -108,7 +89,7 @@ export function TagBar() {
                   key={tag}
                   variant={selectedTags.includes(tag) ? "default" : "outline"}
                   className="cursor-pointer shrink-0 px-3 py-1.5 text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
-                  onClick={() => toggleTag(tag)}
+                  onClick={() => handleToggleTag(tag)}
                 >
                   {tag}
                 </Badge>
@@ -132,7 +113,7 @@ export function TagBar() {
                       <AllTagsPanel 
                         tags={moreTags}
                         selectedTags={selectedTags}
-                        onToggle={toggleTag}
+                        onToggle={handleToggleTag}
                       />
                     </SheetContent>
                   </Sheet>
@@ -151,7 +132,7 @@ export function TagBar() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={clearAllTags}
+                onClick={handleClearTags}
                 className="h-8 px-2"
               >
                 <X className="h-4 w-4" />
