@@ -128,15 +128,9 @@ export function TagBar() {
                         <SheetTitle>เลือกหัวข้อที่สนใจ</SheetTitle>
                       </SheetHeader>
                       <AllTagsPanel
-                        tags={moreTags}
+                        tags={sortedTags}
                         selectedTags={selectedTags}
-                        onToggle={(tag) => {
-                          handleToggleTag(tag)
-                          // Auto-close sheet on mobile after selection
-                          if (isMobile) {
-                            setTimeout(() => setSheetOpen(false), 150)
-                          }
-                        }}
+                        onToggle={handleToggleTag}
                       />
                     </SheetContent>
                   </Sheet>
@@ -146,23 +140,20 @@ export function TagBar() {
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
 
-          {/* Selected Tags Count & Clear - Mobile Optimized */}
+          {/* Selected Tags Count & Clear - Desktop Only */}
           {selectedTags.length > 0 && (
-            <div className="flex items-center gap-1 shrink-0">
-              <span className="text-xs text-muted-foreground hidden sm:inline">
+            <div className="hidden sm:flex items-center gap-1 shrink-0">
+              <span className="text-xs text-muted-foreground">
                 เลือก {selectedTags.length} หัวข้อ
               </span>
-              <Badge variant="secondary" className="text-[10px] sm:hidden h-5 px-1.5">
-                {selectedTags.length}
-              </Badge>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleClearTags}
-                className="h-7 sm:h-8 px-1.5 sm:px-2"
+                className="h-8 px-2"
               >
-                <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline ml-1">ล้างทั้งหมด</span>
+                <X className="h-4 w-4" />
+                <span className="ml-1">ล้างทั้งหมด</span>
               </Button>
             </div>
           )}
